@@ -1,8 +1,54 @@
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { signAccessToken } = require("../middleware/middleware");
+const { signAccessToken } = require("../middleware/auth");
 const User = require("../model/userModel");
+const svgCaptcha = require("svg-captcha");
+const express = require("express");
+
+//show captcha value in console
+const showCaptcha = (req, res, next) => {
+  console.log(req.session.captcha);
+};
+// Sign up user with captcha verification
+const signup = async (req, res) => {
+  let user;
+  var userCaptcha = req.body.captcha;
+  var captchaverif = req.session.captcha;
+
+  console.log("captcha value:", req.session.captcha);
+  console.log("request captcha:", userCaptcha);
+  console.log("session captcha:", captchaverif);
+
+  const { name, email, password, role } = req.body;
+  try {
+    if (!name || !email || !password) {
+      throw new Error("name, email, and password are required");
+    }
+    if (!validator.isEmail(email)) {
+      throw new Error("Invalid email format");
+    }
+    if (!userCaptcha || userCaptcha.trim() === "") {
+      throw new Error("Please enter the captcha value");
+    }
+    if (userCaptcha !== captchaverif) {
+      console.log("captcha value incorrect");
+      throw new Error("Captcha not correct");
+    }
+    user = new User({
+      name,
+      email,
+      password,
+      role,
+    });
+    await user.save();
+    const token = jwt.sign({ userId: user._id }, "abc123");
+    res.status(201).json({ user, token });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 //get user by id
 const getById = async (req, res, next) => {
   const id = req.params.id;
@@ -82,33 +128,13 @@ const deleteUser = (req, res) => {
       });
   });
 };
-//signup user
-const signup = async (req, res) => {
-  let user;
-  const { name, email, password, role } = req.body;
-  try {
-    if (!name || !email || !password) {
-      throw new Error("name, email, and password are required");
-    }
-    if (!validator.isEmail(email)) {
-      throw new Error("Invalid email format");
-    }
-
-    //const hashedPassword = await bcrypt.hash(password, 10);
-
-    user = new User({
-      name,
-      email,
-      password,
-      role,
-    });
-    await user.save();
-    const token = jwt.sign({ userId: user._id }, "abc123");
-    res.status(201).json({ user, token });
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+// Generate captcha and store in session
+const generateCaptcha = (req, res) => {
+  const captcha = svgCaptcha.create();
+  req.session.captcha = captcha.text;
+  res.type("svg").send(captcha.data);
 };
+
 //login user
 const login = async (req, res, next) => {
   try {
@@ -153,4 +179,6 @@ module.exports = {
   signup,
   login,
   deleteUser,
+  generateCaptcha,
+  showCaptcha,
 };

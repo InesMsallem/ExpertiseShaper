@@ -1,9 +1,22 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
-const userRouter = require("./route/userRoute")
-const cors = require('cors');
+const userRouter = require("./route/userRoute");
+const cors = require("cors");
+const session = require("express-session");
+
+// configure session middleware
+app.use(
+  session({
+    secret: "abc1234",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
+
 app.use(cors());
+
 //connecting to db
 mongoose.set("strictQuery", false);
 mongoose
@@ -14,6 +27,6 @@ mongoose
   .then(() => app.listen(5000))
   .catch((err) => console.log(err));
 
-app.use(express.json())
+app.use(express.json());
 
-app.use("/user",userRouter)
+app.use("/user", userRouter);
