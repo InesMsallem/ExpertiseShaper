@@ -1,10 +1,11 @@
 const validator = require("validator");
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { signAccessToken } = require("../middleware/auth");
 const User = require("../model/userModel");
 const svgCaptcha = require("svg-captcha");
-const express = require("express");
+const crypto = require("crypto");
+
+
 
 //show captcha value in console
 const showCaptcha = (req, res, next) => {
@@ -172,6 +173,82 @@ const login = async (req, res, next) => {
   }
 };
 
+
+const forgotPassword = async ({ body: { email } }, res) => {
+  //checking if email exist in the database
+  const user = await User.findOne({ email });
+
+  //  things to do if the user does not exist
+  if (!user)
+    return res
+      .status(404)
+      .json({ message: "Email does not exist.", status: "error" });
+
+  //   generate a random token for the user
+  const generatedToken = crypto.randomBytes(32);
+  //   check for error
+  if (!generatedToken) {
+    return res.status(500).json({
+      message: "An error occured. Please try again later.",
+      status: "error",
+    });
+  }
+
+  //   converting the token to a hexstring
+  const convertTokenToHexString = generatedToken.toString("hex");
+
+  //  set the token and expiring period for the token to the user schema
+  user.resetToken = convertTokenToHexString;
+  user.expireToken = Date.now() + 1800000;
+
+  try {
+    const saveToken = await user.save();
+    return res.status(200).json({
+      message: "add your user url that handles reset password",
+      data: {
+        resetToken: saveToken.resetToken,
+        expireToken: saveToken.expireToken,
+      },
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `An error occured while trying to save the token -> ${error}`,
+    });
+  }
+};
+
+const resetPassword = async ({ body: { email, resetToken, newPassword } }, res) => {
+  // Find the user with the given email and reset token
+  const user = await User.findOne({ email, resetToken });
+
+  // Check if the user exists
+  if (!user) {
+    return res.status(404).json({ message: "Invalid reset token.", status: "error" });
+  }
+
+  // Check if the reset token has expired
+  if (user.expireToken < Date.now()) {
+    return res.status(400).json({ message: "Reset token has expired.", status: "error" });
+  }
+
+  // Set the user's new password and clear the reset token and expiration time
+  user.password = newPassword;
+  user.resetToken = undefined;
+  user.expireToken = undefined;
+
+  // Save the updated user object to the database
+  try {
+    const savedUser = await user.save();
+    return res.status(200).json({ message: "Password reset successful.", status: "success" });
+  } catch (error) {
+    return res.status(500).json({ message: "An error occurred while resetting password.", status: "error" });
+  }
+};
+
+
+
 module.exports = {
   Userslist,
   getById,
@@ -181,4 +258,6 @@ module.exports = {
   deleteUser,
   generateCaptcha,
   showCaptcha,
+  forgotPassword,
+  resetPassword
 };

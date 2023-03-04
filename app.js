@@ -4,6 +4,10 @@ const app = express();
 const userRouter = require("./route/userRoute");
 const cors = require("cors");
 const session = require("express-session");
+const dotenv = require('dotenv');
+
+// configure dotenv
+dotenv.config();
 
 // configure session middleware
 app.use(
@@ -17,14 +21,16 @@ app.use(
 
 app.use(cors());
 
+app.use(express.urlencoded({ extended: true }));
+
 //connecting to db
 mongoose.set("strictQuery", false);
 mongoose
   .connect(
-    "mongodb+srv://mslmines:30101999@cluster0.82xmoja.mongodb.net/?retryWrites=true&w=majority"
+    "mongodb+srv://ahmed:admin@nodeapi.i8w0wza.mongodb.net/?retryWrites=true&w=majority"
   )
   .then(() => console.log("CONNECTED TO DB"))
-  .then(() => app.listen(5000))
+  .then(() => app.listen(8080))
   .catch((err) => console.log(err));
 
 app.use(express.json());

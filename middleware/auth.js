@@ -1,4 +1,6 @@
 const jwt = require("jsonwebtoken");
+const User = require("../model/userModel");
+
 
 const auth = (req, res, next) => {
   try {
@@ -38,5 +40,8 @@ const signAccessToken = (userId) => {
     });
   });
 };
+
+
+
 
 module.exports = { auth, signAccessToken };

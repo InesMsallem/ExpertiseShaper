@@ -11,4 +11,8 @@ router.post("/login", userController.login);
 router.get("/ShowSessionCaptcha", userController.showCaptcha);
 router.get("/generateCaptcha", userController.generateCaptcha);
 
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password", userController.resetPassword);
+
+
 module.exports = router;

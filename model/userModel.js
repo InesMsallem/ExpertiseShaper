@@ -15,6 +15,8 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  resetToken: String,
+  expireToken: String,
   role: {
     type: String,
     enum: ["student", "instructor", "admin"]
@@ -24,7 +26,10 @@ const UserSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: "course"
     }
-  ]
-});
+  ],
+},
+  {
+    timestamps: true,
+  });
 
 module.exports = mongoose.model("user", UserSchema);
