@@ -4,6 +4,9 @@ const { signAccessToken } = require("../middleware/auth");
 const User = require("../model/userModel");
 const svgCaptcha = require("svg-captcha");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
+
 
 
 
@@ -174,7 +177,7 @@ const login = async (req, res, next) => {
 };
 
 
-const forgotPassword = async ({ body: { email } }, res) => {
+/* const forgotPassword = async ({ body: { email } }, res) => {
   //checking if email exist in the database
   const user = await User.findOne({ email });
 
@@ -244,6 +247,122 @@ const resetPassword = async ({ body: { email, resetToken, newPassword } }, res) 
     return res.status(200).json({ message: "Password reset successful.", status: "success" });
   } catch (error) {
     return res.status(500).json({ message: "An error occurred while resetting password.", status: "error" });
+  }
+}; */
+
+
+// Create a nodemailer transporter
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "expertiseshaper@gmail.com",
+    pass: "jhuosyrjxednxvcf",
+  },
+});
+
+const forgotPassword = async ({ body: { email } }, res) => {
+  // checking if email exists in the database
+  const user = await User.findOne({ email });
+
+  // things to do if the user does not exist
+  if (!user)
+    return res
+      .status(404)
+      .json({ message: "Email does not exist.", status: "error" });
+
+  // generate a random token for the user
+  const generatedToken = crypto.randomBytes(32);
+  // check for error
+  if (!generatedToken) {
+    return res.status(500).json({
+      message: "An error occurred. Please try again later.",
+      status: "error",
+    });
+  }
+
+  // converting the token to a hex string
+  const convertTokenToHexString = generatedToken.toString("hex");
+
+  // set the token and expiring period for the token to the user schema
+  user.resetToken = convertTokenToHexString;
+  user.expireToken = Date.now() + 1800000;
+
+  try {
+    const saveToken = await user.save();
+
+    // Send email to user with reset link
+    const resetLink = `http://localhost:3000/resetPassword/${saveToken.resetToken}`;
+    const mailOptions = {
+      from: "expertiseshaper@gmail.com",
+      to: email,
+      subject: "Reset your password",
+      text: `Click the link below to reset your password:\n\n${resetLink}`,
+    };
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({
+      message: "Reset link sent to email.",
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `An error occurred while trying to save the token -> ${error}`,
+    });
+  }
+};
+
+
+const resetPassword = async (
+  { body: { email, resetToken, newPassword } },
+  res
+) => {
+  // Find the user with the given email and reset token
+  const user = await User.findOne({ email, resetToken });
+
+  // Check if the user exists
+  if (!user) {
+    return res
+      .status(404)
+      .json({ message: "Invalid reset token.", status: "error" });
+  }
+
+  // Check if the reset token has expired
+  if (user.expireToken < Date.now()) {
+    return res
+      .status(400)
+      .json({ message: "Reset token has expired.", status: "error" });
+  }
+
+  // Set the user's new password and clear the reset token and expiration time
+  user.password = newPassword;
+  user.resetToken = undefined;
+  user.expireToken = undefined;
+
+  // Save the updated user object to the database
+  try {
+    const savedUser = await user.save();
+
+    // Send email to user to confirm password reset
+    const mailOptions = {
+      from: "expertiseshaper@gmail.com",
+      to: email,
+      subject: "Password reset confirmation",
+      text: `Your password has been successfully reset.`,
+    };
+    await transporter.sendMail(mailOptions);
+
+    return res.status(200).json({
+      message: "Password reset successful.",
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: `An error occurred while trying to save the updated user object -> ${error}`,
+    });
   }
 };
 
