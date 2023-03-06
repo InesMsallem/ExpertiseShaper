@@ -6,8 +6,8 @@ const User = require("../model/userModel");
 const svgCaptcha = require("svg-captcha");
 const express = require("express");
 const catchAsyncErrors = require("./../middleware/catchAsyncErrors");
-const textflow = require("textflow.js");
-textflow.useKey("P1y83bzDKnKuKeIZdEs3vmMkyK7aagRCQte6eBPq8ah2ftQrve5kfAizZqANjsua"); // dont forget to change this
+// const textflow = require("textflow.js");
+// textflow.useKey("P1y83bzDKnKuKeIZdEs3vmMkyK7aagRCQte6eBPq8ah2ftQrve5kfAizZqANjsua"); // dont forget to change this
 
 //show captcha value in console
 const showCaptcha = (req, res, next) => {
@@ -185,35 +185,35 @@ const logout = catchAsyncErrors(async (req, res, next) => {
     message: "Logged Out",
   });
 });
-const sendVerificationCode = async(req, res) =>{
+// const sendVerificationCode = async(req, res) =>{
 
-  const {phone_number, password} = req.body;
+//   const {phone_number, password} = req.body;
 
-  const verificationOptions ={
-      service_name: 'My super cool app',
-      seconds: 600,
-  }
+//   const verificationOptions ={
+//       service_name: 'My super cool app',
+//       seconds: 600,
+//   }
 
-  const result = await textflow.sendVerificationSMS(phone_number, verificationOptions);
+//   const result = await textflow.sendVerificationSMS(phone_number, verificationOptions);
 
-  return res.status(result.status).json(result.message)
+//   return res.status(result.status).json(result.message)
 
-}
+// }
 
-const verifyCode = async(req, res) =>{
+// const verifyCode = async(req, res) =>{
 
-  const {phone_number, code} = req.body;
+//   const {phone_number, code} = req.body;
 
 
-  let result = await textflow.verifyCode(phone_number, code); 
+//   let result = await textflow.verifyCode(phone_number, code); 
 
-  if(result.valid)
-  {
-      // your server logic
-      return res.status(200).json(result.message)
-  }
-  return res.status(result.status).json(result.message)
-  }
+//   if(result.valid)
+//   {
+//       // your server logic
+//       return res.status(200).json(result.message)
+//   }
+//   return res.status(result.status).json(result.message)
+//   }
 
 
 
@@ -227,6 +227,6 @@ module.exports = {
   generateCaptcha,
   showCaptcha,
   logout,
-  sendVerificationCode,
-  verifyCode
+  // sendVerificationCode,
+  // verifyCode
 };

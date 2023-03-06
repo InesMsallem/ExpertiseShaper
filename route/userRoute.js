@@ -13,8 +13,8 @@ router.post("/login", userController.login);
 router.get("/ShowSessionCaptcha", userController.showCaptcha);
 router.get("/generateCaptcha", userController.generateCaptcha);
 router.get("/logout", userController.logout);
-router.post('/send-code', userController.sendVerificationCode);
-router.post('/verify-code', userController.verifyCode)
+// router.post('/send-code', userController.sendVerificationCode);
+// router.post('/verify-code', userController.verifyCode)
 
 
 
