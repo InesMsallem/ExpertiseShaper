@@ -1,29 +1,38 @@
+//Expertise Back
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const UserSchema = new Schema({
+const UserSchema = new Schema(
+  {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     email: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
+    verified: Boolean,
+    resetToken: String,
+    expireToken: String,
     role: {
       type: String,
-      enum: ["student", "instructor","admin"]
+      enum: ["student", "instructor", "admin"],
     },
     courses: [
       {
         type: Schema.Types.ObjectId,
-        ref: "course"
-      }
-    ] 
-  });
-  
-  module.exports = mongoose.model("user", UserSchema);
+        ref: "course",
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("user", UserSchema);
