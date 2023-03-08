@@ -22,7 +22,6 @@ app.use(
 app.use(cors());
 
 app.use(express.urlencoded({ extended: true }));
-
 //connecting to db
 mongoose.set("strictQuery", false);
 mongoose
@@ -30,9 +29,12 @@ mongoose
     "mongodb+srv://ahmed:admin@nodeapi.i8w0wza.mongodb.net/?retryWrites=true&w=majority"
   )
   .then(() => console.log("CONNECTED TO DB"))
-  .then(() => app.listen(8080))
+  .then(() => app.listen(8080, () => {
+    console.log('Server is listening on port 8080')
+  }))
   .catch((err) => console.log(err));
 
 app.use(express.json());
 
 app.use("/user", userRouter);
+
