@@ -1,14 +1,18 @@
 const express = require("express");
+const app = express();
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const app = express();
-const passportSetup = require("./passport");
-const passport = require("passport");
-const authRoute = require("./route/authgo");
 const mongoose = require("mongoose");
-const userRouter = require("./route/userRoute");
+const passport = require("passport");
 const session = require("express-session");
 const dotenv = require("dotenv");
+dotenv.config();
+
+const passportSetup = require("./passport");
+const authRoute = require("./route/authgo");
+const userRouter = require("./route/userRoute");
+
+
 app.use(
   cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
 );
@@ -29,7 +33,6 @@ app.use("/auth", authRoute);
 app.listen("5000", () => {
   console.log("Server is running!");
 });
-dotenv.config();
 
 // configure session middleware
 app.use(

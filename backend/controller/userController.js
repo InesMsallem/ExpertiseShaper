@@ -13,6 +13,11 @@ const UserVerification = require("../model/userVerification");
 const { v4: uuidv4 } = require("uuid");
 const userVerification = require("../model/userVerification");
 
+const accountSid = process.env.TWILIO_ACCOUNT_SID; // Your Account SID from www.twilio.com/console
+const authToken = process.env.TWILIO_AUTH_TOKEN; // Your Auth Token from www.twilio.com/console
+const smsClient = require('twilio')(accountSid, authToken);
+
+
 // Signup
 const signup = async (req, res) => {
   let user;
@@ -519,6 +524,30 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const sendSMS = async (req, res) => {
+    const { phone } = req.body;
+
+    const number = phone || "+21629029262";
+
+    // hash a random number of 6 digits
+    const code = Math.floor(100000 + Math.random() * 900000);
+
+    // hash it to sha256
+    const hash = crypto.createHash("sha256").update(code.toString()).digest("hex");
+
+    smsClient.messages
+        .create({body: `Your account verification code is ${code}`, from: '+15674852825', to: number})
+        .then(message => {
+            console.log("message sent", message.sid);
+            res.status(200).json({message: "message sent", hash: hash});
+        })
+        .catch(err => {
+            console.log("error", err);
+            res.status(500).json({message: "error", message: err});
+        });
+}
+    
+
 module.exports = {
   Userslist,
   getById,
@@ -532,5 +561,6 @@ module.exports = {
   resetPassword,
   verifyUserEmail,
   verifyEmailPage,
-  logout
+  logout,
+  sendSMS
 };

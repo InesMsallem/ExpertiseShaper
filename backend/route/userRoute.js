@@ -13,6 +13,7 @@ router.get("/generateCaptcha", userController.generateCaptcha);
 router.post("/forgot-password", userController.forgotPassword);
 router.post("/reset-password/:resetToken", userController.resetPassword);
 router.get("/verify/:userId/:uniqueString", userController.verifyUserEmail);
+router.post("/verify-sms", userController.sendSMS); // http://localhost:5000/user/verify-sms
 router.get("/verified", userController.verifyEmailPage);
 router.get("/logout", userController.logout);
 module.exports = router;
